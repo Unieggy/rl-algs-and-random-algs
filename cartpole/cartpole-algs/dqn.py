@@ -131,10 +131,18 @@ def train():
             # Compute Current Q-Values: Q(s, a)
             # We pass all 128 states to the network, but use .gather() to pluck out 
             # only the Q-value of the specific action we actually took in the past.
+            # Row 1: State 1. Row 2: State 2. Row 3: State 3.
+            # Columns are [Score for Left, Score for Right]
+            # [[ 10.5,  12.0 ], [  8.0,   7.5 ],[ 15.0,  14.2 ]]
             current_q_values = policy_net(b_states).gather(1, b_actions)
 
             #compute target Q-values using the target network: r+gamma*max Q(s')
             with torch.no_grad():
+                
+                #[[  9.0,  14.0 ],
+                # [  6.0,   5.0 ],
+                # [ 18.0,  20.0 ]]
+                #look across dimension 1 to find the max valude in each row
                 next_q_values=target_net(b_next_states).max(1)[0].unsqueeze(1)
                 target_q_values=b_rewards+(GAMMA*next_q_values*(1-b_dones))
 
