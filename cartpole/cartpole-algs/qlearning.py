@@ -46,10 +46,10 @@ def train():
     for ep in range(1,N_EPISODES+1):
         obs,info=env.reset()
         s=discretize(obs)
-        a=eps_greedy_action(Q,s,eps)
         ep_return=0.0
         done=False
         while not done:
+            a=eps_greedy_action(Q,s,eps)
             obs_next,r,terminated,truncated,info=env.step(a)
             done=terminated or truncated
             bootstrap=0.0 if terminated else 1.0

@@ -13,11 +13,11 @@ BUFFER_SIZE     = 10_000     # Size of the Experience Replay
 BATCH_SIZE      = 128        # How many memories to sample for one training step
 GAMMA           = 0.99       # Discount factor
 LR              = 1e-3       # Learning rate
-TARGET_UPDATE   = 100        # How often (in steps) to copy weights to the Target Net
+TARGET_UPDATE   = 120        # How often (in steps) to copy weights to the Target Net
 EPSILON_START   = 1.0        # 100% random actions at start
 EPSILON_END     = 0.05       # 5% random actions at end
 EPSILON_DECAY   = 1000       # How fast epsilon decays
-MAX_STEPS       = 20_000     # Total training steps
+MAX_STEPS       = 80_000     # Total training steps
 SEED            = 42
 DEVICE          = "mps" if torch.backends.mps.is_available() else "cpu"
 
@@ -35,8 +35,8 @@ class QNetwork(nn.Module):
             nn.Linear(128,act_dim) #no softmax
             )
         
-        def forward(self,x):
-            return self.net(x)
+    def forward(self,x):
+        return self.net(x)
         
 
 #the replay buffer
@@ -68,7 +68,7 @@ class ReplayBuffer:
 def train():
     random.seed(SEED)
     np.random.seed(SEED)
-    torch.manual_speed(SEED)
+    torch.manual_seed(SEED)
 
     env=gym.make(ENV_ID)
     obs_dim=env.observation_space.shape[0]
@@ -112,6 +112,13 @@ def train():
 
         if done:
             returns_log.append(ep_reward)
+            episodes_played = len(returns_log)
+            if episodes_played % 10 == 0:
+                # Calculate the average score of the last 10 episodes
+                avg_return = np.mean(returns_log[-10:])
+                print(f"Step: {step:5d}/{MAX_STEPS} | Episode: {episodes_played:4d} | "
+                      f"Avg Return (last 10): {avg_return:6.1f} | Epsilon: {epsilon:.3f}")
+            # ---------------------
             ep_reward=0
             state,_=env.reset()
 
@@ -158,8 +165,11 @@ def train():
         if step % TARGET_UPDATE == 0:
             target_net.load_state_dict(policy_net.state_dict())
 
+    # Save the trained policy network
+    torch.save(policy_net.state_dict(), "dqn_cartpole.pth")
     env.close()
     print("Training complete. Last 10 episode returns:", returns_log[-10:])
+
 
 if __name__ == "__main__":
     train()
