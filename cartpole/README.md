@@ -4,7 +4,8 @@ Train classic Gymnasium control tasks with clean, extensible RL code.
 - ✅ PPO + CartPole-v1
 - ✅ Tabular Q-learning + CartPole-v1
 - ✅ Tabular SARSA + CartPole-v1
-- 🔜 DQN, A2C, SAC (drop-in structure ready)
+- ✅ DQN + CartPole-v1
+- 🔜 A2C, SAC (drop-in structure ready)
 
 ## Quickstart
 
