@@ -39,6 +39,17 @@ Implementations of classical path planning algorithms for navigation in continuo
 - Potential Fields — gradient-based reactive planner using attractive/repulsive force fields
 - Hybrid A* — kinematically feasible A* variant for non-holonomic vehicles
 
+### `kf/`
+
+Implementations of state estimation algorithms using Kalman Filters for sensor fusion.
+
+**Implemented:**
+- 1D Kalman Filter — multi-sensor fusion for drone altitude estimation, fusing a drifting barometer and a spike-prone ultrasonic sensor into a single clean state estimate
+
+**Planned:**
+- Extended Kalman Filter (EKF) — nonlinear state estimation via first-order Taylor linearization
+- Unscented Kalman Filter (UKF) — nonlinear estimation using sigma-point sampling
+
 ## Setup
 
 Each subdirectory is independently structured with its own dependencies. Navigate into the relevant directory and follow the local README for environment setup and run instructions.
