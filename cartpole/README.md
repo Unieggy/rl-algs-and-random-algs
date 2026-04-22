@@ -1,11 +1,16 @@
-# RL Gymnasium 
+# RL & Imitation Learning — Gymnasium
 
-Train classic Gymnasium control tasks with clean, extensible RL code.
+Train classic Gymnasium control tasks with clean, extensible RL and imitation learning code.
+
+**Reinforcement learning:**
 - ✅ PPO + CartPole-v1
 - ✅ Tabular Q-learning + CartPole-v1
 - ✅ Tabular SARSA + CartPole-v1
 - ✅ DQN + CartPole-v1
 - 🔜 A2C, SAC (drop-in structure ready)
+
+**Imitation learning:**
+- ✅ DAgger + CartPole-v1
 
 ## Quickstart
 

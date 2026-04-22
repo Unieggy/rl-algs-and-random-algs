@@ -8,11 +8,14 @@ A collection of reinforcement learning and path planning algorithm implementatio
 
 Implementations of RL algorithms applied to the CartPole-v1 Gymnasium environment. Each algorithm is self-contained and follows a consistent training/evaluation pattern.
 
-**Implemented algorithms:**
+**Implemented RL algorithms:**
 - Proximal Policy Optimization (PPO) — policy gradient method with clipped surrogate objective
 - Tabular Q-Learning — off-policy TD control using a discretized state space
 - Tabular SARSA — on-policy TD control using a discretized state space
 - Deep Q-Network (DQN) — off-policy TD control with a neural network function approximator and experience replay
+
+**Implemented imitation learning algorithms:**
+- DAgger (Dataset Aggregation) — iteratively queries an expert policy to build a corrected dataset, reducing the compounding errors of naive behavioral cloning
 
 **Planned:**
 - A2C (Advantage Actor-Critic) — synchronous policy gradient with a shared value baseline
