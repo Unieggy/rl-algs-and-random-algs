@@ -49,10 +49,54 @@ optimizer=optim.Adam(student_net.parameters(),lr=1e-3)
 #set up the loss function for training the student network
 loss_fn=nn.CrossEntropyLoss()
 
+# ==============================================================================
+# DAGGER ALGORITHM FLOW & DATASET TENSOR EVOLUTION
+# ==============================================================================
+# Example Scenario Context: 
+# - Environment: CartPole (Observation: 4D vector, Action: 1D scalar integer)
+# - Settings: EPISODES_PER_ITER = 5
+#
+# FLOW & DIMENSIONAL VISUALIZATION:
+# 
+# Iteration 0 (Initialization):
+# - Environment Interaction: Expert agent drives 5 perfect episodes for example each episode lastes 100 steps, so 500 steps total
+# - Action Generation:       Expert agent provides actions
+# - Data Collected:          500 steps of perfect trajectories
+# - Master Dataset Status:   500 total pairs
+# - Training Tensor Shapes:  obs_tensor    -> Shape: (500, 4)
+#                            action_tensor -> Shape: (500,)
+# - Training Phase:          Imitator trains on this (500, 4) tensor.
+#
+# Iteration 1 (The First Test & First Mistakes):
+# - Environment Interaction: Imitator agent drives (clumsy, ~50 steps/ep = 250 steps total)
+# - Action Generation:       Expert agent calculates correct actions for those 250 clumsy states
+# - Data Collected:          250 steps of error-recovery trajectories
+# - Master Dataset Status:   500 (Historical) + 250 (New) = 750 total pairs
+# - Training Tensor Shapes:  obs_tensor    -> Shape: (750, 4)
+#                            action_tensor -> Shape: (750,)
+# - Training Phase:          Imitator retrains on the ENTIRE (750, 4) tensor.
+#
+# Iteration 2 (Expanding the Boundary):
+# - Environment Interaction: Imitator drives again (improved, ~80 steps/ep = 400 steps total)
+# - Action Generation:       Expert agent calculates correct actions for these new edge-cases
+# - Data Collected:          400 steps of new edge-case trajectories
+# - Master Dataset Status:   750 (Historical) + 400 (New) = 1150 total pairs
+# - Training Tensor Shapes:  obs_tensor    -> Shape: (1150, 4)
+#                            action_tensor -> Shape: (1150,)
+# - Training Phase:          Imitator retrains on the ENTIRE (1150, 4) tensor.
+#
+# * Note: As iterations progress, the batch dimension (N, 4) continuously grows, 
+#         forcing the imitator to map an increasingly diverse set of states to 
+#         expert-approved actions.
+# ==============================================================================
+
+DAGGER_ITERATIONS = 8      # Total number of collection/training cycles
+EPISODES_PER_ITER = 5      # Number of environment rollouts per cycle
+EPOCHS_PER_UPDATE = 10     # Number of training passes over the master dataset per cycle
 #3. DAgger training loop- Data Collection
-DAGGER_ITERATIONS=8
-EPISODES_PER_ITER=5 #how many episodes the student policy interacts with the environment to collect data in each iteration of DAgger
-EPOCHS_PER_UPDATE=10 #how many time we train the student network on the aggregated dataset after each iteration of data collection
+DAGGER_ITERATIONS=8 # how many cycles of data collection and student training we perform in DAgger
+EPISODES_PER_ITER=5 #how many episodes the student policy have to play in the env before it pauses to retrain on the aggregated dataset
+EPOCHS_PER_UPDATE=10 # after student 5 episodes of interaction with the env, we retrain the student network for 10 epochs on the aggregated dataset of observations and expert actions
 
 dataset_obs=[]
 dataset_actions=[]
