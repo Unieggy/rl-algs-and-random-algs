@@ -90,13 +90,11 @@ loss_fn=nn.CrossEntropyLoss()
 #         expert-approved actions.
 # ==============================================================================
 
-DAGGER_ITERATIONS = 8      # Total number of collection/training cycles
-EPISODES_PER_ITER = 5      # Number of environment rollouts per cycle
-EPOCHS_PER_UPDATE = 10     # Number of training passes over the master dataset per cycle
+
 #3. DAgger training loop- Data Collection
-DAGGER_ITERATIONS=8 # how many cycles of data collection and student training we perform in DAgger
-EPISODES_PER_ITER=5 #how many episodes the student policy have to play in the env before it pauses to retrain on the aggregated dataset
-EPOCHS_PER_UPDATE=10 # after student 5 episodes of interaction with the env, we retrain the student network for 10 epochs on the aggregated dataset of observations and expert actions
+DAGGER_ITERATIONS=40 # how many cycles of data collection and student training we perform in DAgger
+EPISODES_PER_ITER=20 #how many episodes the student policy have to play in the env before it pauses to retrain on the aggregated dataset
+EPOCHS_PER_UPDATE=30 # after student 20 episodes of interaction with the env, we retrain the student network for 30 epochs on the aggregated dataset of observations and expert actions
 
 dataset_obs=[]
 dataset_actions=[]
@@ -110,7 +108,7 @@ for iteration in range(DAGGER_ITERATIONS):
         while not done:
             #convert the observation array into a batched pytorch tensor
             
-            x=torch.from_numpy(obs).float.unsqueeze(0).to(DEVICE) #shape: [4,], unsqueeze add a dimension so shape becomes [1,4]
+            x=torch.from_numpy(obs).float().unsqueeze(0).to(DEVICE) #shape: [4,], unsqueeze add a dimension so shape becomes [1,4]
 
             #query the expert for the action to take in the current state
             with torch.no_grad():
@@ -132,14 +130,14 @@ for iteration in range(DAGGER_ITERATIONS):
             dataset_actions.append(expert_actions)
 
             #step the environment using the student's action
-            obs,reward,terminated,truncated,_=env.step(student_actions)
+            obs,reward,terminated,truncated,_=env.step(student_action)
             done=terminated or truncated
 
     #4. retrain the student network on the aggregated dataset
     obs_tensor=torch.tensor(np.array(dataset_obs),dtype=torch.float32).to(DEVICE) #shape: [N,4]
     actions_tensor=torch.tensor(dataset_actions,dtype=torch.long).to(DEVICE) #shape: [N,1]
 
-    student_net.tain() #set the student network to training mode
+    student_net.train() #set the student network to training mode
 
     for epoch in range(EPOCHS_PER_UPDATE):
         #clear the gradients
@@ -155,7 +153,8 @@ for iteration in range(DAGGER_ITERATIONS):
         loss.backward()
         optimizer.step()
 
+    print(f"Iteration {iteration+1}/{DAGGER_ITERATIONS} — dataset size: {len(dataset_obs)}, loss: {loss.item():.4f}")
 
+torch.save(student_net.state_dict(), "dagger_student.pth")
+print("Student model saved to dagger_student.pth")
 
-            
-    
